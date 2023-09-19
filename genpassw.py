@@ -1,55 +1,27 @@
 import os
 import string
 import random
+import base64
 import bcrypt
 from cryptography.fernet import Fernet
-salt = bcrypt.gensalt()
 
 # Carpeta de contraseñas en el escritorio
 escritorio = os.path.expanduser("~/Escritorio")
 carpeta_contraseñas = os.path.join(escritorio, "contraseñas")
 
-# Crear la carpeta si no existe
-if not os.path.exists(carpeta_contraseñas):
-    os.makedirs(carpeta_contraseñas)
-
-# Clave maestra para encriptar contraseñas
-clave_maestra = input("Ingrese la clave maestra: ")
-clave_maestra = clave_maestra.encode()  # Convertir la clave a bytes
+# Función para generar una clave maestra aleatoria
+def generar_clave_maestra():
+    return base64.urlsafe_b64encode(os.urandom(32))
 
 # Función para encriptar una contraseña
-def encriptar_contraseña(contraseña):
-    f = Fernet(base64.urlsafe_b64encode(clave_maestra))
+def encriptar_contraseña(contraseña, clave_maestra):
+    f = Fernet(clave_maestra)
     return f.encrypt(contraseña.encode()).decode()
 
 # Función para desencriptar una contraseña
-def desencriptar_contraseña(contraseña_encriptada):
-    f = Fernet(base64.urlsafe_b64encode(clave_maestra))
+def desencriptar_contraseña(contraseña_encriptada, clave_maestra):
+    f = Fernet(clave_maestra)
     return f.decrypt(contraseña_encriptada.encode()).decode()
-
-# Función para autenticar al usuario con la clave maestra
-def autenticar_usuario():
-    global clave_maestra
-    intentos = 3
-
-    while intentos > 0:
-        entrada = input("Ingrese la clave maestra para acceder a las contraseñas: ")
-        entrada = entrada.encode()
-
-        # Verificar la clave maestra
-        if bcrypt.checkpw(entrada, clave_maestra):
-            print("Autenticación exitosa.")
-            return True
-        else:
-            print("Clave maestra incorrecta. Intentos restantes:", intentos)
-            intentos -= 1
-
-    print("Demasiados intentos fallidos. Saliendo.")
-    return False
-
-# Autenticar al usuario antes de continuar
-if not autenticar_usuario():
-    exit()
 
 # Obtener el tamaño de la contraseña
 longitud = int(input("Ingrese el tamaño de la contraseña: "))
@@ -75,12 +47,13 @@ if permitir_numeros:
 if not caracteres:
     print("No se han seleccionado opciones válidas para la contraseña.")
 else:
-    # Generar la contraseña
+    # Generar la clave maestra y encriptar la contraseña
+    clave_maestra = generar_clave_maestra()
     contrasena = "".join(random.choice(caracteres) for i in range(longitud))
     print("La contraseña generada es: " + contrasena)
 
     # Encriptar la contraseña antes de guardarla
-    contraseña_encriptada = encriptar_contraseña(contrasena)
+    contraseña_encriptada = encriptar_contraseña(contrasena, clave_maestra)
 
     # Crear o actualizar un archivo de texto con la información de la contraseña en el escritorio
     archivo_contraseña = os.path.join(carpeta_contraseñas, "contraseñas.txt")
@@ -90,3 +63,7 @@ else:
         archivo.write(f"Contraseña encriptada: {contraseña_encriptada}\n\n")
 
     print(f"La información se ha guardado en {archivo_contraseña} en el escritorio.")
+
+    # Desencriptar la contraseña (ejemplo)
+    contraseña_desencriptada = desencriptar_contraseña(contraseña_encriptada, clave_maestra)
+    print("Contraseña desencriptada:", contraseña_desencriptada)
