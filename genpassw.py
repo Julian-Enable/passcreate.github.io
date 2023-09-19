@@ -5,9 +5,13 @@ import base64
 import bcrypt
 from cryptography.fernet import Fernet
 
-# Carpeta de contraseñas en el escritorio
-escritorio = os.path.expanduser("~/Escritorio")
+# Carpeta de contraseñas en el escritorio del usuario (compatible con Windows)
+escritorio = os.path.expanduser("~/Desktop")  # Usamos "Desktop" en lugar de "Escritorio" en Windows
 carpeta_contraseñas = os.path.join(escritorio, "contraseñas")
+
+# Crear la carpeta si no existe
+if not os.path.exists(carpeta_contraseñas):
+    os.makedirs(carpeta_contraseñas)
 
 # Función para generar una clave maestra aleatoria
 def generar_clave_maestra():
@@ -63,7 +67,3 @@ else:
         archivo.write(f"Contraseña encriptada: {contraseña_encriptada}\n\n")
 
     print(f"La información se ha guardado en {archivo_contraseña} en el escritorio.")
-
-    # Desencriptar la contraseña (ejemplo)
-    contraseña_desencriptada = desencriptar_contraseña(contraseña_encriptada, clave_maestra)
-    print("Contraseña desencriptada:", contraseña_desencriptada)
