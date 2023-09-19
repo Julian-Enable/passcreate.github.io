@@ -1,31 +1,14 @@
 import os
 import string
 import random
-import base64
-import bcrypt
-from cryptography.fernet import Fernet
 
 # Carpeta de contraseñas en el escritorio del usuario (compatible con Windows)
 escritorio = os.path.expanduser("~/Desktop")  # Usamos "Desktop" en lugar de "Escritorio" en Windows
-carpeta_contraseñas = os.path.join(escritorio, "contraseñas")
+carpeta_contraseñas = os.path.join(escritorio, "contraseñas_genpassw")
 
 # Crear la carpeta si no existe
 if not os.path.exists(carpeta_contraseñas):
     os.makedirs(carpeta_contraseñas)
-
-# Función para generar una clave maestra aleatoria
-def generar_clave_maestra():
-    return base64.urlsafe_b64encode(os.urandom(32))
-
-# Función para encriptar una contraseña
-def encriptar_contraseña(contraseña, clave_maestra):
-    f = Fernet(clave_maestra)
-    return f.encrypt(contraseña.encode()).decode()
-
-# Función para desencriptar una contraseña
-def desencriptar_contraseña(contraseña_encriptada, clave_maestra):
-    f = Fernet(clave_maestra)
-    return f.decrypt(contraseña_encriptada.encode()).decode()
 
 # Obtener el tamaño de la contraseña
 longitud = int(input("Ingrese el tamaño de la contraseña: "))
@@ -51,19 +34,15 @@ if permitir_numeros:
 if not caracteres:
     print("No se han seleccionado opciones válidas para la contraseña.")
 else:
-    # Generar la clave maestra y encriptar la contraseña
-    clave_maestra = generar_clave_maestra()
+    # Generar la contraseña
     contrasena = "".join(random.choice(caracteres) for i in range(longitud))
     print("La contraseña generada es: " + contrasena)
-
-    # Encriptar la contraseña antes de guardarla
-    contraseña_encriptada = encriptar_contraseña(contrasena, clave_maestra)
 
     # Crear o actualizar un archivo de texto con la información de la contraseña en el escritorio
     archivo_contraseña = os.path.join(carpeta_contraseñas, "contraseñas.txt")
     with open(archivo_contraseña, "a") as archivo:
         archivo.write(f"Correo: {correo}\n")
         archivo.write(f"Página: {pagina}\n")
-        archivo.write(f"Contraseña encriptada: {contraseña_encriptada}\n\n")
+        archivo.write(f"Contraseña: {contrasena}\n\n")
 
     print(f"La información se ha guardado en {archivo_contraseña} en el escritorio.")
