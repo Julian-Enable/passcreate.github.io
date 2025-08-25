@@ -24,7 +24,7 @@ app.config.from_object(config[config_name])
 
 db = SQLAlchemy(app)
 
-# Inicializar base de datos
+# Función para inicializar base de datos (se ejecutará al final)
 def init_database():
     """Inicializar la base de datos y crear clave de encriptación"""
     with app.app_context():
@@ -56,9 +56,6 @@ def init_database():
             
         except Exception as e:
             print(f"⚠️  Error al inicializar base de datos: {e}")
-
-# Ejecutar inicialización
-init_database()
 
 # Generar clave de encriptación
 def get_encryption_key():
@@ -144,40 +141,48 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password_hash, password):
-            session['user_id'] = user.id
-            session['username'] = user.username
-            return redirect(url_for('index'))
-        else:
-            flash('Usuario o contraseña incorrectos', 'error')
+        try:
+            username = request.form['username']
+            password = request.form['password']
+            
+            user = User.query.filter_by(username=username).first()
+            if user and check_password_hash(user.password_hash, password):
+                session['user_id'] = user.id
+                session['username'] = user.username
+                return redirect(url_for('index'))
+            else:
+                flash('Usuario o contraseña incorrectos', 'error')
+        except Exception as e:
+            print(f"Error en login: {e}")
+            flash('Error interno del servidor', 'error')
     
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        email = request.form.get('email', f'{username}@example.com')  # Email opcional
-        password = request.form['password']
-        master_password = request.form['master_password']
-        
-        if User.query.filter_by(username=username).first():
-            flash('El usuario ya existe', 'error')
-        else:
-            user = User(
-                username=username,
-                email=email,
-                password_hash=generate_password_hash(password),
-                master_password_hash=generate_password_hash(master_password)
-            )
-            db.session.add(user)
-            db.session.commit()
-            flash('Usuario registrado exitosamente', 'success')
-            return redirect(url_for('login'))
+        try:
+            username = request.form['username']
+            email = request.form.get('email', f'{username}@example.com')  # Email opcional
+            password = request.form['password']
+            master_password = request.form['master_password']
+            
+            if User.query.filter_by(username=username).first():
+                flash('El usuario ya existe', 'error')
+            else:
+                user = User(
+                    username=username,
+                    email=email,
+                    password_hash=generate_password_hash(password),
+                    master_password_hash=generate_password_hash(master_password)
+                )
+                db.session.add(user)
+                db.session.commit()
+                flash('Usuario registrado exitosamente', 'success')
+                return redirect(url_for('login'))
+        except Exception as e:
+            print(f"Error en registro: {e}")
+            flash('Error interno del servidor', 'error')
     
     return render_template('register.html')
 
@@ -347,7 +352,8 @@ def not_found_error(error):
 def unauthorized_error(error):
     return jsonify({'error': 'No autorizado'}), 401
 
+# Inicializar base de datos cuando se importa el módulo
+init_database()
+
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
     app.run(debug=True, host='0.0.0.0', port=5000)
