@@ -6,11 +6,12 @@
     <title>{% block title %}GenPassw Pro{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <nav class="navbar navbar-expand-lg navbar-dark glass-effect">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('index') }}">
                 <i class="fas fa-shield-alt me-2"></i>GenPassw Pro
@@ -44,7 +45,7 @@
         </div>
     </nav>
 
-    <main class="container mt-4">
+    <main class="container mt-4 fade-in">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
@@ -59,7 +60,7 @@
         {% block content %}{% endblock %}
     </main>
 
-    <footer class="bg-light mt-5 py-4">
+    <footer class="mt-5 py-4">
         <div class="container text-center">
             <p class="text-muted mb-0">
                 <i class="fas fa-shield-alt me-1"></i>GenPassw Pro - Gestor de Contraseñas Seguro

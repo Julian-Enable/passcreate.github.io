@@ -1,5 +1,9 @@
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Cargar variables de entorno desde .env
+load_dotenv()
 
 class Config:
     """Configuración base de la aplicación"""
@@ -8,7 +12,11 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'dev-secret-key-change-in-production'
     
     # Configuración de la base de datos
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///passwords.db'
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+        DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+    
+    SQLALCHEMY_DATABASE_URI = DATABASE_URL or 'sqlite:///passwords.db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Configuración de sesiones
@@ -47,9 +55,10 @@ class ProductionConfig(Config):
     SESSION_COOKIE_SECURE = True
     
     # En producción, asegúrate de tener una SECRET_KEY fuerte
-    SECRET_KEY = os.environ.get('SECRET_KEY')
-    if not SECRET_KEY:
-        raise ValueError("SECRET_KEY debe estar configurada en producción")
+    def __init__(self):
+        super().__init__()
+        if not self.SECRET_KEY or self.SECRET_KEY == 'dev-secret-key-change-in-production':
+            raise ValueError("SECRET_KEY debe estar configurada en producción")
 
 class TestingConfig(Config):
     """Configuración para testing"""

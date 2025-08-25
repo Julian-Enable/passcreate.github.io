@@ -40,28 +40,46 @@ Una aplicación web moderna y segura para generar, almacenar y gestionar contras
 - Python 3.8 o superior
 - pip (gestor de paquetes de Python)
 
-### Instalación
+### Instalación Rápida
 
-1. **Clonar el repositorio**
-   ```bash
-   git clone https://github.com/tu-usuario/genpassw-pro.git
-   cd genpassw-pro
-   ```
+**Opción 1: Instalación automática (Recomendada)**
+```bash
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/genpassw-pro.git
+cd genpassw-pro
 
-2. **Instalar dependencias**
-   ```bash
-   pip install -r requirements.txt
-   ```
+# Instalación automática
+python install.py
+```
 
-3. **Ejecutar la aplicación**
-   ```bash
-   python app.py
-   ```
+**Opción 2: Instalación manual**
+```bash
+# Clonar el repositorio
+git clone https://github.com/tu-usuario/genpassw-pro.git
+cd genpassw-pro
 
-4. **Acceder a la aplicación**
-   - Abre tu navegador y ve a `http://localhost:5000`
-   - Registra una nueva cuenta
-   - ¡Comienza a usar GenPassw Pro!
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Configurar entorno (opcional)
+cp env.example .env
+# Edita .env con tus configuraciones
+```
+
+### Ejecutar la Aplicación
+
+```bash
+# Usar el script de inicio (recomendado)
+python run.py
+
+# O ejecutar directamente
+python app.py
+```
+
+### Acceder a la Aplicación
+- Abre tu navegador y ve a `http://localhost:5000`
+- Registra una nueva cuenta
+- ¡Comienza a usar GenPassw Pro!
 
 ### Variables de Entorno (Opcional)
 Crea un archivo `.env` en la raíz del proyecto:
@@ -173,6 +191,58 @@ genpassw-pro/
 ## 📄 Licencia
 
 Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
+## 🚀 Despliegue en Producción
+
+### Opciones Recomendadas
+
+#### 1. **Render.com** (Recomendado)
+```bash
+# 1. Sube tu código a GitHub
+git add .
+git commit -m "Preparado para despliegue"
+git push origin main
+
+# 2. Ve a render.com y crea una cuenta
+# 3. Conecta tu repositorio de GitHub
+# 4. Selecciona 'Web Service'
+# 5. Configura las variables de entorno:
+#    - SECRET_KEY: (se genera automáticamente)
+#    - FLASK_ENV: production
+#    - DATABASE_URL: (se configura automáticamente)
+```
+
+#### 2. **Railway.app**
+```bash
+# 1. Ve a railway.app
+# 2. Conecta tu repositorio de GitHub
+# 3. Selecciona 'Deploy from GitHub repo'
+# 4. Configura las variables de entorno
+```
+
+#### 3. **Heroku**
+```bash
+# Instalar Heroku CLI
+npm install -g heroku
+
+# Login y despliegue
+heroku login
+heroku create genpassw-pro
+git push heroku main
+```
+
+### Verificación Previa al Despliegue
+```bash
+# Verificar que todo esté listo
+python deploy.py
+```
+
+### Variables de Entorno Necesarias
+```env
+SECRET_KEY=tu-clave-secreta-super-segura
+FLASK_ENV=production
+DATABASE_URL=postgresql://usuario:contraseña@host:puerto/db
+```
 
 ## ⚠️ Disclaimer
 

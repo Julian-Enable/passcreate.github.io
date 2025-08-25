@@ -18,9 +18,6 @@ def create_app(config_name=None):
     # Configurar la aplicación
     app.config.from_object(config[config_name])
     
-    # Inicializar extensiones
-    db.init_app(app)
-    
     return app
 
 def init_db():
