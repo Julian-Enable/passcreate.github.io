@@ -21,7 +21,7 @@ class Config:
     
     # Configuración de sesiones
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
-    SESSION_COOKIE_SECURE = False  # Cambiar a True en producción con HTTPS
+    SESSION_COOKIE_SECURE = os.environ.get('FLASK_ENV') == 'production'  # True en producción
     SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = 'Lax'
     

@@ -8,13 +8,57 @@ import random
 import json
 from datetime import datetime
 import base64
+from config import config
+
+# Determinar configuración basada en entorno
+config_name = os.environ.get('FLASK_ENV', 'development')
+if config_name == 'production':
+    config_name = 'production'
+elif config_name == 'testing':
+    config_name = 'testing'
+else:
+    config_name = 'development'
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'tu-clave-secreta-aqui')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///passwords.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config.from_object(config[config_name])
 
 db = SQLAlchemy(app)
+
+# Inicializar base de datos
+def init_database():
+    """Inicializar la base de datos y crear clave de encriptación"""
+    with app.app_context():
+        try:
+            # Crear todas las tablas
+            db.create_all()
+            print("✅ Base de datos inicializada correctamente")
+            
+            # Crear clave de encriptación si no existe
+            key_file = 'encryption.key'
+            if not os.path.exists(key_file):
+                key = Fernet.generate_key()
+                with open(key_file, 'wb') as f:
+                    f.write(key)
+                print("✅ Clave de encriptación generada")
+            
+            # Crear usuario admin por defecto si no existe
+            admin = User.query.filter_by(username='admin').first()
+            if not admin:
+                admin = User(
+                    username='admin',
+                    email='admin@genpassw.com',
+                    password_hash=generate_password_hash('admin123'),
+                    master_password_hash=generate_password_hash('admin123')
+                )
+                db.session.add(admin)
+                db.session.commit()
+                print("✅ Usuario admin creado (admin/admin123)")
+            
+        except Exception as e:
+            print(f"⚠️  Error al inicializar base de datos: {e}")
+
+# Ejecutar inicialización
+init_database()
 
 # Generar clave de encriptación
 def get_encryption_key():
@@ -42,6 +86,7 @@ class PasswordEntry(db.Model):
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
     master_password_hash = db.Column(db.String(120), nullable=False)
 
@@ -116,6 +161,7 @@ def login():
 def register():
     if request.method == 'POST':
         username = request.form['username']
+        email = request.form.get('email', f'{username}@example.com')  # Email opcional
         password = request.form['password']
         master_password = request.form['master_password']
         
@@ -124,6 +170,7 @@ def register():
         else:
             user = User(
                 username=username,
+                email=email,
                 password_hash=generate_password_hash(password),
                 master_password_hash=generate_password_hash(master_password)
             )
@@ -285,6 +332,20 @@ def export_passwords():
         })
     
     return jsonify(export_data)
+
+# Manejo de errores
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return jsonify({'error': 'Error interno del servidor'}), 500
+
+@app.errorhandler(404)
+def not_found_error(error):
+    return jsonify({'error': 'Recurso no encontrado'}), 404
+
+@app.errorhandler(401)
+def unauthorized_error(error):
+    return jsonify({'error': 'No autorizado'}), 401
 
 if __name__ == '__main__':
     with app.app_context():
